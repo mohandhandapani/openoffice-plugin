@@ -1,6 +1,6 @@
 ' ***** BEGIN LICENSE BLOCK *****
 '
-' Copyright (c) 2009-2012 Mendeley Ltd.
+' Copyright (c) 2009-2016 Mendeley Ltd.
 '
 ' Licensed under the Educational Community License, Version 1.0 (the "License");
 ' you may not use this file except in compliance with the License.
@@ -59,7 +59,7 @@ Sub reportError()
 End Sub
 
 Sub sendWordProcessorVersion()
-      Call apiSetWordProcessor("OpenOffice.org", "unknown")
+      Call apiSetWordProcessor("LibreOffice.org", "unknown")
 End Sub
 
 Function MakePropertyValue( Optional cName As String, Optional uValue ) As com.sun.star.beans.PropertyValue
@@ -771,10 +771,21 @@ Sub applyStyleToSpan(wholeRange as range, startPosition as Long, endPosition as 
     Dim startTag As String
     Dim endTag As String
     
-	startTag = "<span style=""font-variant:small-caps;"">"
-	endTag = "</span>"
-	
-	Call applyStyleToTags(startTag, endTag, wholeRange, startPosition, endPosition, "small-caps")
+'	startTag = "<span style=""font-variant:small-caps;"">"
+'	endTag = "</span>"
+'	Call applyStyleToTags(startTag, endTag, wholeRange, startPosition, endPosition, "small-caps")
+'	wholeRange.Font.SmallCaps = False
+    ' Added condition becuase of avoid multiple execute the function for tag
+    If InStr(rangeString(wholeRange), "<span style=""baseline"">") <> 0 Then
+        startTag = "<span style=""baseline"">"
+        endTag = "</span>"
+        Call applyStyleToTags(startTag, endTag, wholeRange, startPosition, endPosition, "baseline")
+    End If
+    If InStr(rangeString(wholeRange), "<span style=""font-variant:small-caps;"">") <> 0 Then
+        startTag = "<span style=""font-variant:small-caps;"">"
+        endTag = "</span>"
+        Call applyStyleToTags(startTag, endTag, wholeRange, startPosition, endPosition, "small-caps")
+    End If
 End Sub
 
 Sub applyStyleToTagPairs(tag As String, wholeRange As range, _
@@ -876,6 +887,11 @@ Sub applyStyleToTags(startTag As String, endTag As String, wholeRange As range, 
                 
             Case "small-caps"
             	thisRange.setPropertyValue("CharCaseMap", 4)
+            	
+            Case "baseline"
+                'thisRange.Font.SuperScript = False
+                'thisRange.Font.SubScript = False
+                
         End Select
 
         ' remove extra space from after the tag
@@ -1031,4 +1047,6 @@ Function indexOf(container() As String, item As String) As Long
     ' not found
     indexOf = -1
 End Function
+
+
 
